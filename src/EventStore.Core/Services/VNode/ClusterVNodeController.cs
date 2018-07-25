@@ -447,7 +447,7 @@ namespace EventStore.Core.Services.VNode
 
         private void Handle(SystemMessage.ServiceInitialized message)
         {
-            Log.Info("========== [{internalHttp}] Service '{serviceName}' initialized.", _nodeInfo.InternalHttp, message.ServiceName);
+            Log.Info("========== [{internalHttp}] Service '{service}' initialized.", _nodeInfo.InternalHttp, message.ServiceName);
             _serviceInitsToExpect -= 1;
             _outputBus.Publish(message);
             if (_serviceInitsToExpect == 0)
@@ -845,7 +845,8 @@ namespace EventStore.Core.Services.VNode
 
         private void Handle(SystemMessage.ServiceShutdown message)
         {
-            Log.Info("========== [{internalHttp}] Service '{serviceName}' has shut down.", _nodeInfo.InternalHttp, message.ServiceName);
+            Log.Info("========== [{internalHttp}] Service '{service}' has shut down.", _nodeInfo.InternalHttp, message.ServiceName);
+
             _serviceShutdownsToExpect -= 1;
             if (_serviceShutdownsToExpect == 0)
             {
