@@ -309,7 +309,7 @@ namespace EventStore.Projections.Core.Services.Management
             if (!_projectionsStarted)
                 return;
             _logger.Info(
-                "Updating '{message}' projection source to '{query}' (Requested type is: '{handlerType}')",
+                "Updating '{projection}' projection source to '{source}' (Requested type is: '{type}')",
                 message.Name,
                 message.Query,
                 message.HandlerType);
@@ -327,7 +327,7 @@ namespace EventStore.Projections.Core.Services.Management
         {
             if (!_projectionsStarted)
                 return;
-            _logger.Info("Disabling '{message}' projection", message.Name);
+            _logger.Info("Disabling '{projection}' projection", message.Name);
 
             var projection = GetProjection(message.Name);
             if (projection == null)
@@ -343,12 +343,12 @@ namespace EventStore.Projections.Core.Services.Management
         {
             if (!_projectionsStarted)
                 return;
-            _logger.Info("Enabling '{message}' projection", message.Name);
+            _logger.Info("Enabling '{projection}' projection", message.Name);
 
             var projection = GetProjection(message.Name);
             if (projection == null)
             {
-                _logger.Error("DBG: PROJECTION *{message}* NOT FOUND.", message.Name);
+                _logger.Error("DBG: PROJECTION *{projection}* NOT FOUND.", message.Name);
                 message.Envelope.ReplyWith(new ProjectionManagementMessage.NotFound());
             }
             else
@@ -362,7 +362,7 @@ namespace EventStore.Projections.Core.Services.Management
         {
             if (!_projectionsStarted)
                 return;
-            _logger.Info("Aborting '{message}' projection", message.Name);
+            _logger.Info("Aborting '{projection}' projection", message.Name);
 
             var projection = GetProjection(message.Name);
             if (projection == null)
@@ -378,12 +378,12 @@ namespace EventStore.Projections.Core.Services.Management
         {
             if (!_projectionsStarted)
                 return;
-            _logger.Info("Setting RunAs1 account for '{message}' projection", message.Name);
+            _logger.Info("Setting RunAs1 account for '{projection}' projection", message.Name);
 
             var projection = GetProjection(message.Name);
             if (projection == null)
             {
-                _logger.Error("DBG: PROJECTION *{message}* NOT FOUND.", message.Name);
+                _logger.Error("DBG: PROJECTION *{projection}* NOT FOUND.", message.Name);
                 message.Envelope.ReplyWith(new ProjectionManagementMessage.NotFound());
             }
             else
@@ -401,12 +401,12 @@ namespace EventStore.Projections.Core.Services.Management
         {
             if (!_projectionsStarted)
                 return;
-            _logger.Info("Resetting '{message}' projection", message.Name);
+            _logger.Info("Resetting '{projection}' projection", message.Name);
 
             var projection = GetProjection(message.Name);
             if (projection == null)
             {
-                _logger.Error("DBG: PROJECTION *{message}* NOT FOUND.", message.Name);
+                _logger.Error("DBG: PROJECTION *{projection}* NOT FOUND.", message.Name);
                 message.Envelope.ReplyWith(new ProjectionManagementMessage.NotFound());
             }
             else
@@ -640,7 +640,7 @@ namespace EventStore.Projections.Core.Services.Management
             {
                 if (!_started)
                 {
-                    _logger.Debug("PROJECTIONS: Starting Projections Manager. (Node State : {currentState})", _currentState);
+                    _logger.Debug("PROJECTIONS: Starting Projections Manager. (Node State : {state})", _currentState);
                     Start();
                 }
             }
@@ -648,7 +648,7 @@ namespace EventStore.Projections.Core.Services.Management
             {
                 if (_started)
                 {
-                    _logger.Debug("PROJECTIONS: Stopping Projections Manager. (Node State : {currentState})", _currentState);
+                    _logger.Debug("PROJECTIONS: Stopping Projections Manager. (Node State : {state})", _currentState);
                     Stop();
                 }
             }
