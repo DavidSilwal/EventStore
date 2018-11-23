@@ -20,6 +20,7 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
         private MultiStreamEventReader _edp;
         private int _fromSequenceNumber;
         private string[] _streamNames;
+        const string _streamName = "stream";
         private Dictionary<string,long> _streamPositions;
         private Guid _distibutionPointCorrelationId;
 
@@ -41,6 +42,44 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
                 new RealTimeProvider());
                 
             _edp.Resume();
+        }
+
+        private void HandleEvents(long[] eventNumbers)
+        {
+            string eventType = "event_type";
+            List<ResolvedEvent> events = new List<ResolvedEvent>();
+
+            foreach (long eventNumber in eventNumbers)
+            {
+                events.Add(
+                    ResolvedEvent.ForUnresolvedEvent(
+                        new EventRecord(
+                            eventNumber, 50 * (eventNumber + 1), Guid.NewGuid(), Guid.NewGuid(), 50 * (eventNumber + 1), 0, _streamName, ExpectedVersion.Any, DateTime.UtcNow,
+                            PrepareFlags.SingleWrite | PrepareFlags.TransactionBegin | PrepareFlags.TransactionEnd,
+                            eventType, new byte[] { 0 }, new byte[] { 0 }
+                        )
+                    )
+                );
+            }
+
+            var correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Last().CorrelationId;
+
+            long start, end;
+            if (eventNumbers.Length > 0)
+            {
+                start = eventNumbers[0];
+                end = eventNumbers[eventNumbers.Length - 1];
+            }
+            else
+            {
+                start = _fromSequenceNumber;
+                end = _fromSequenceNumber;
+            }
+
+            _edp.Handle(
+                new ClientMessage.ReadStreamEventsForwardCompleted(
+                    correlationId, _streamName, start, 100, ReadStreamResult.Success, events.ToArray(), null, false, "", start + 1, end, true, 200)
+            );
         }
 
         private void HandleEvents(string stream, long[] eventNumbers){
@@ -108,15 +147,12 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.multi_stream_r
         }
 
         [Test]
-        public void events_after_first_event_should_be_in_sequence()
-        {            
-            Assert.Throws<InvalidOperationException>(() => {
-                //_fromSequenceNumber+2 has been omitted
-                HandleEvents(_streamNames[0],new long[]{_fromSequenceNumber,_fromSequenceNumber+1,_fromSequenceNumber+3,_fromSequenceNumber+4});
-                //to trigger event delivery:
-                HandleEvents(_streamNames[1],100,101);
-            });
-            Assert.AreEqual(1, HandledMessages.OfType<ReaderSubscriptionMessage.Faulted>().Count());
+        public void events_after_second_event_should_not_be_in_sequence()
+        {
+            //_fromSequenceNumber+2 has been omitted
+            HandleEvents(new long[] { _fromSequenceNumber, _fromSequenceNumber + 1, _fromSequenceNumber + 3, _fromSequenceNumber + 4 });
+
+            Assert.AreEqual(2, HandledMessages.OfType<ReaderSubscriptionMessage.Faulted>().Count());
         }
     }
 }

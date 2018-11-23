@@ -116,20 +116,19 @@ namespace EventStore.Projections.Core.Tests.Services.event_reader.stream_reader
         public void cannot_handle_repeated_read_events_completed()
         {
             var correlationId = _consumer.HandledMessages.OfType<ClientMessage.ReadStreamEventsForward>().Last().CorrelationId;
-            Assert.Throws<InvalidOperationException>(() => {
             _edp.Handle(
                 new ClientMessage.ReadStreamEventsForwardCompleted(
                     correlationId, "stream", 100, 100, ReadStreamResult.Success,
                     new[]
-                        {
-                            ResolvedEvent.ForUnresolvedEvent(
-                        new EventRecord(
-                            10, 50, Guid.NewGuid(), Guid.NewGuid(), 50, 0, "stream", ExpectedVersion.Any,
-                            DateTime.UtcNow,
-                            PrepareFlags.SingleWrite | PrepareFlags.TransactionBegin | PrepareFlags.TransactionEnd,
-                            "event_type", new byte[0], new byte[0]))
-                        }, null, false, "", 11, 10, true, 100));
-            });
+                    {
+                        ResolvedEvent.ForUnresolvedEvent(
+                            new EventRecord(
+                                10, 50, Guid.NewGuid(), Guid.NewGuid(), 50, 0, "stream", ExpectedVersion.Any,
+                                DateTime.UtcNow,
+                                PrepareFlags.SingleWrite | PrepareFlags.TransactionBegin | PrepareFlags.TransactionEnd,
+                                "event_type", new byte[0], new byte[0]))
+                    }, null, false, "", 11, 10, true, 100));
+            Assert.AreEqual(1, HandledMessages.OfType<ReaderSubscriptionMessage.Faulted>().Count());
         }
 
         [Test]
